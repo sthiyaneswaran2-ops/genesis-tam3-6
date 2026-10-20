@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamil Bible Quiz</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #3f74b9, #ede9fe);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .quiz-container {
+            background: white;
+            width: 100%;
+            max-width: 550px;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4338ca;
+            font-size: 27px;
+            margin-top: 0;
+        }
+
+        .intro {
+            text-align: center;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        #participant-name {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0 18px;
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        #participant-name:focus {
+            outline: 2px solid #6366f1;
+            border-color: #6366f1;
+        }
+
+        .quiz-info {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 14px;
+            color: #555;
+            margin: 20px 0 12px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: #dbeafe;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #4f46e5;
+            transition: width 0.3s ease;
+        }
+
+        #question {
+            font-size: 21px;
+            line-height: 1.5;
+            color: #222;
+            margin-top: 25px;
+            white-space: pre-line;
+        }
+
+        #options {
+            display: grid;
+            gap: 12px;
+            margin: 22px 0;
+        }
+
+        .option {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            background: white;
+            color: #222;
+            font-size: 16px;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .option:hover:not(:disabled) {
+            border-color: #6366f1;
+            background: #eef2ff;
+        }
+
+        .option.correct {
+            background: #dcfce7;
+            border-color: #16a34a;
+        }
+
+        .option.wrong {
+            background: #fee2e2;
+            border-color: #dc2626;
+        }
+
+        .option:disabled {
+            cursor: default;
+            opacity: 1;
+        }
+
+        #feedback {
+            min-height: 24px;
+            line-height: 1.5;
+            font-weight: bold;
+            margin: 12px 0;
+        }
+
+        .main-button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #4f46e5;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .main-button:hover:not(:disabled) { background: #3730a3; }
+
+        .main-button:disabled {
+            background: #a5b4fc;
+            cursor: not-allowed;
+        }
+
+        #result { text-align: center; }
+
+        #final-score {
+            font-size: 23px;
+            font-weight: bold;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .hidden { display: none !important; }
+
+        .result-mode {
+            padding: 22px;
+            margin: 20px 0;
+            border-radius: 18px;
+            text-align: center;
+            animation: popIn 0.6s ease;
+        }
+
+        .result-mode[hidden] { display: none; }
+
+        .happy-mode {
+            background: linear-gradient(135deg, #d4fc79, #96e6a1);
+            color: #14532d;
+        }
+
+        .sad-mode {
+            background: linear-gradient(135deg, #dbeafe, #e9d5ff);
+            color: #3730a3;
+        }
+
+        .result-emoji {
+            font-size: 65px;
+            margin: 10px;
+        }
+
+        .result-mode h2 {
+            font-size: 26px;
+            margin: 10px 0;
+            color: inherit;
+        }
+
+        .result-mode p {
+            font-size: 17px;
+            line-height: 1.6;
+        }
+
+        #submission-status {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #555;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 12px; }
+            .quiz-container { padding: 20px; }
+            h1 { font-size: 23px; }
+            #question { font-size: 18px; }
+            .option { font-size: 15px; padding: 12px; }
+        }
+    </style>
+</head>
+
+<body>
+<main class="quiz-container">
+
+    <!-- REGISTRATION PAGE -->
+    <section id="register">
+        <h1>ஆதியாகமம் வினாடி வினா</h1>
+        <p class="intro">
+            Welcome to the Tamil Bible Quiz!<br>
+            Please enter your name before starting.
+        </p>
+
+        <form id="register-form">
+            <label for="participant-name">Participant Name / பங்கேற்பாளர் பெயர்</label>
+            <input
+                type="text"
+                id="participant-name"
+                placeholder="Enter your full name"
+                required
+                maxlength="100"
+                autocomplete="name"
+            >
+            <button type="submit" class="main-button">Start Quiz / வினாடி வினாவைத் தொடங்கு</button>
+        </form>
+    </section>
+
+    <!-- QUIZ AREA -->
+    <section id="quiz" class="hidden">
+        <h1>Bib;e Champions (ஆதியாகமம்) </h1>
+
+        <div class="quiz-info">
+            <span id="question-count">Question 1 of 20</span>
+            <span id="score">Score: 0</span>
+        </div>
+
+        <div class="progress-track">
+            <div id="progress-bar"></div>
+        </div>
+
+        <h2 id="question">Loading question...</h2>
+        <div id="options"></div>
+        <p id="feedback" aria-live="polite"></p>
+
+        <button id="next-btn" class="main-button" disabled>Next Question</button>
+    </section>
+
+    <!-- FINAL RESULT AREA -->
+    <section id="result" class="hidden" aria-live="polite">
+        <h2> வினாடி வினா முடிந்தது!</h2>
+        <p id="final-score"></p>
+        <p id="message"></p>
+
+        <div id="resultMode" class="result-mode" hidden>
+            <div id="resultEmoji" class="result-emoji"></div>
+            <h2 id="resultTitle"></h2>
+            <p id="resultMessage"></p>
+        </div>
+
+        <p id="submission-status"></p>
+
+        <button id="restart-btn" class="main-button">மீண்டும் விளையாடு</button>
+    </section>
+
+</main>
+
+<script>
+    /*
+      GOOGLE SHEETS SETUP:
+      After deploying your Google Apps Script as a Web app,
+      paste the URL ending in /exec between the quotation marks below.
+    */
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1gdokO8NP6teWiheZJz4m4yhhswSHR8AK58RhRt2nq3HB3s5wwMfUsgvgx_tw7MvLzA/exec";
+    async function saveQuizResult(name, score, total) {
+    const percentage = Math.round((score / total) * 100);
+
+    const formData = new URLSearchParams({
+        name: name,
+        score: String(score),
+        total: String(total),
+        percentage: String(percentage)
+    });
+
+    try {
+        await fetch(SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            body: formData
+        });
+
+        document.getElementById("submission-status").textContent =
+            "Your result has been submitted. Thank you!";
+
+    } catch (error) {
+        document.getElementById("submission-status").textContent =
+            "Submission failed. Please check your internet connection.";
+        console.error(error);
+    }
+}
+    // QUESTIONS AND ANSWERS
+    const questions = [
+        {
+            question: "1) தேவனாகிய கர்த்தர் உண்டாக்கின சகல காட்டு ஜீவன்களைப்பார்க்கிலும் எது  தந்திரமுள்ளதாயிருந்தது?",
+            options: ["கரடி ","சர்ப்பம்","சிங்கம்","பன்றி"],
+            answer: 1
+        },
+        {
+            question: "2) நீங்கள் ________  அதைப் புசிக்கவும் அதைத் தொடவும் வேண்டாம் என்று சொன்னார் ?",
+            options: [" கண்கள் திறக்காதபடிக்கு ", "தூதர்களாகாத படிக்கு", "பிழைக்காதபடிக்கு", "சாகாதபடிக்கு"],
+            answer: 3
+        },
+        {
+            question: "3) அவர்கள் தாங்கள் நிர்வாணிகள் என்று அறிந்து, ________ தைத்து, தங்களுக்கு அரைக்கச்சைகளை உண்டுபண்ணினார்கள்.",
+            options: ["ஒலிவ இலை  ", "அத்தியிலை ", "தேக்கு இலை ", "வாழை இலை"],
+            answer: 1
+        },
+        {
+            question: "4) எந்த வேளையிலே தோட்டத்தில் உலாவுகிற தேவனாகிய கர்த்தருடைய சத்தத்தை அவர்கள் கேட்டார்கள்.",
+            options: ["பகலில் உஷ்ண ", "காலையில் உஷ்ண ", "பகலில் குளிர்ச்சியான ", "இரவில் குளிர்ச்சியான "],
+            answer: 2
+        },
+        {
+            question: "5) அப்பொழுது ஆதாமும் அவன் மனைவியும் தேவனாகிய கர்த்தருடைய சந்நிதிக்கு விலகி, எங்கே ஒளித்துக்கொண்டார்கள்? ",
+            options: [" தோட்டத்தின் விருட்சங்களுக்குள்ளே", "தோட்டத்தின் மரங்களுக்குள்ளே ", "தோட்டத்தின் செடிகளுக்குள்ளே ", "தோட்டத்திலே"],
+            answer: 0
+        },
+        {
+            question: "6) நீ எங்கே இருக்கிறாய்? என்று கர்த்தர் யாரிடம் கேட்டார்?",
+            options: ["சர்ப்பம்", "ஆதாம்", "விருட்சம்", "எதுவுமில்லை"],
+            answer: 1
+        },
+        {
+            question: "7) நீ உன் வயிற்றினால் நகர்ந்து, உயிரோடிருக்கும் நாளெல்லாம் எதை தின்பாய்.?",
+            options: ["புழுதி", "கல்", "இலை","மண்"],
+            answer: 3
+        },
+        {
+            question: "8) ஆதாமின் நிமித்தம் சபிக்கப்பட்டிருப்பது எது?",
+            options: ["தோட்டம்", "உலகம்", "பூமி","சமுத்திரம்"],
+            answer: 2
+        },
+        {
+            question: "9) நீ மண்ணாயிருக்கிறாய், மண்ணுக்குத் திரும்புவாய். என்று யாரிடம் சொல்லப்பட்டது?",
+            options: ["ஆதாம்", "சர்ப்பம்", "ஏவாள் ", "எதுவுமில்லை"],
+            answer: 0
+        },
+        {
+            question: "10) தேவனாகிய கர்த்தர் ஆதாமுக்கும் அவன் மனைவிக்கும் என்ன உடைகளை உண்டாக்கி அவர்களுக்கு உடுத்தினார்?",
+            options: [" இலை", "தோல்", "பட்டு", "பருத்தி"],
+            answer: 1
+        },
+        {
+            question: "11)  அவள் கர்ப்பவதியாகி, யாரை பெற்று, கர்த்தரால் ஒரு மனுஷனைப் பெற்றேன் என்றாள்.",
+            options: ["ஆபேல்", "ஆதாம்", "காயீன்", "சேத்"],
+            answer: 2
+        },
+        {
+            question: "12) யார் ஆடுகளை மேய்க்கிறவனானான், யார் நிலத்தைப் பயிரிடுகிறவனானான்?",
+            options: ["காயீன்,ஆபேல்", "ஆபேல்,காயீன்", "சேத்,ஆபேல்", "ஆதாம்,சேத்"],
+            answer: 1
+        },
+        {
+            question: "13) காயீன் எதை கர்த்தருக்குக் காணிக்கையாகக் கொண்டுவந்தான்? ",
+            options: ["நிலத்தின் பயிர்வகை" , "நிலத்தின் காய்களை"," நிலத்தின் பூண்டுகளை","நிலத்தின் கனிகளைக்"],
+            answer: 3
+        },
+        {
+            question: "14) யார் தன் மந்தையின் தலையீற்றுகளிலும் அவைகளில் கொழுமையானவைகளிலும் சிலவற்றைக் கொண்டுவந்தான்.",
+            options: ["ஆதாம்", "காயீன்", "சேத்", "ஆபேல்"],
+            answer: 3
+        },
+        {
+            question: "15) எது பூமியிலிருந்து என்னை நோக்கிக் கூப்பிடுகிறது என்றார்?",
+            options: ["இரத்தத்தின் சத்தம் ", "இரைச்சலின் சத்தம் ", "பேசுகிற சத்தம் ", "கூக்குரலின் சத்தம்"],
+            answer: 0
+        },
+        {
+            question: "16) யாரையும் அவன் காணிக்கையையும் கர்த்தர் அங்கீகரித்தார்.  யாரையும் அவன் காணிக்கையையும் அவர் அங்கீகரிக்கவில்லை. ",
+            options: ["ஆபேல்,சேத்", "காயீன்,ஆபேல்", "ஆபேல்,காயீன்", "ஆதாம்,சேத்"],
+            answer: 2
+        },
+        {
+            question: "17) யாருடைய முகநாடி வேறுபட்டது? ",
+            options: ["ஆதாம்", "ஆபேல்", "காயீன்", "சேத்"],
+            answer: 2
+        },
+        {
+            question: "18) அவர்கள் எங்கே இருக்கும் சமயத்தில், காயீன் தன் சகோதரனாகிய ஆபேலுக்கு விரோதமாய் எழும்பி, அவனைக் கொலைசெய்தான்?",
+            options: ["தோட்டத்தில்", "பட்டணத்தில்", "வயல்வெளியில்", "தேசத்தில்"],
+            answer: 2
+        },
+        {
+            question: "19) நான் அறியேன். 'என் சகோதரனுக்கு நான் காவலாளியோ' என்றது யார்?",
+            options: ["சேத்", "காயீன்", "ஆபேல்", "ஆதாம்"],
+            answer: 1
+        },
+        {
+            question: "20) லாமேக்கு எத்தனை வருஷம் வாழ்ந்தான்?",
+            options: ["555 ", "666 ", "777", "888"],     
+            answer: 2
+        },
+        {
+            question: "21) உன் சகோதரனுடைய இரத்தத்தை உன் கையிலே வாங்கிக்கொள்ளத் தன் வாயைத் திறந்தது எது?",
+            options: ["தேசம்", " தோட்டம் ", "மிருகம்", "பூமி"],     
+            answer: 3
+        },
+        {
+            question: "22) எது தன் பலனை இனி உனக்குக் கொடாது. என்று காயீனிடம் கூறினார்?",
+            options: ["தேசம்", "தோட்டம்", "நிலம்", "பூமி"],     
+            answer: 2
+        },
+        {
+            question: "23) நீ பூமியில் எப்படி இருப்பாய் என்று காயீனிடம் கர்த்தர் கூறினார்?",
+            options: ["நிலையற்று அலைகிறவன்", "திசையற்று அலைகிறவன்", "ஆசீர்வாதமாய்", "செழிப்பாய்"],     
+            answer: 0
+        },
+        {
+            question: "24) காயீனை கண்டுபிடிக்கிறவன் எவனும்  என்ன செய்வான் ?",
+            options: ["சிநேகிதனாயிருப்பான்", "சேர்த்துக்கொள்வான்", "கொன்று போடுவான்", "அழித்துப்பொடுவான்ம"],     
+            answer: 2
+        },
+        {
+            question: "25) எத்தனை பழி சுமரும் என்று சொல்லி, காயீனைக் கண்டுபிடிக்கிறவன் எவனும் அவனைக் கொன்றுபோடாதபடிக்குக் கர்த்தர் அவன்மேல் ஒரு அடையாளத்தைப் போட்டார்?",
+            options: ["எழுபது", "ஏழு", "எழுபத்தேழு", "எழுநூறு"],     
+            answer: 1
+        },
+        {
+            question: "26) அப்படியே காயீன் கர்த்தருடைய சந்நிதியைவிட்டுப் புறப்பட்டு, ஏதேனுக்குக் கிழக்கான _______  என்னும் தேசத்தில் குடியிருந்தான் ?",
+            options: ["எகிப்து", "பெத்தேல்", "ஏனோக்கு", "நோத்"],     
+            answer: 3
+        },
+        {
+            question: "27) காயீன் கட்டின பட்டணத்தின் பெயர் என்ன?",
+            options: ["பாபேல்", "பெத்தேல்", "ஏனோக்கு", "ஆயீ"],     
+            answer: 2
+        },
+        {
+            question: "28) தூபால் காயீனுடைய சகோதரி யார் ?",
+            options: ["ஏவாள்", "ஆதாள்", "சில்லாள்", "நாமாள்"],     
+            answer: 3
+        },
+        {
+            question: "29) எனக்குக் காயமுண்டாக ஒரு _______ கொன்றேன். எனக்குத் தழும்புண்டாக ஒரு _________ கொலைசெய்தேன். ",
+            options: ["மனுஷன், வாலிபன் ", "வாலிபன், மனுஷன்", "சிநேகிதன்,சகோதரன்", "சகோதரன்,சிநேகிதன்"],     
+            answer: 0
+        },
+        {
+            question: "30) காயீனுக்காக ஏழபழி சுமருமானால், லாமேக்குக்காக ________ பழி சுமரும் என்றான்.",
+            options: ["எழுபது", "ஏழு", "எழுபத்தேழு", "எழுநூறு"],     
+            answer: 2
+        },
+        {
+            question: "31) காயீன் கொலைசெய்த ஆபேலுக்குப் பதிலாக, தேவன் எனக்கு வேறொரு புத்திரனைக் கொடுத்தார் என்று சொல்லி, அவனுக்குச் ______ என்று பேரிட்டாள்.",
+            options: ["சேத்", "ஏனோக்கு", "யாபால்", "யூபால்"],     
+            answer: 0
+        },
+        {
+            question: "32) யார் பிறந்தபொழுது மனுஷர் கர்த்தருடைய நாமத்தைத் தொழுதுகொள்ள ஆரம்பித்தார்கள்?",
+            options: ["ஏனோஸ்", "ஏனோக்கு", "யாபால்", "சேத்"],     
+            answer: 0
+        },
+        {
+            question: "33) ஆதாம் நூற்று முப்பது வயதானபோது, தன் சாயலாகத் தன் ரூபத்தின்படியே ஒரு குமாரனைப் பெற்று, அவனுக்குச் என்னவென்று பேரிட்டான்?",
+            options: ["ஆபேல்", "காயீன்", "சேத்", "ஆதாம்"],     
+            answer: 2
+        },
+        {
+            question: "34) ஆதாம் உயிரோடு இருந்த நாட்கள் எல்லாம் எத்தனை வருஷம்?",
+            options: ["930", "912", "950", "962"],     
+            answer: 0
+        },
+        {
+            question: "35) சேத் யாரைப் பெற்றான்?",
+            options: ["மெத்தூசலா", "ஏனோஸ்", "யாபால்", "யூபால்"],     
+            answer: 1
+        },
+        {
+            question: "36) ஏனோக்கு எத்தனை வருடம் தேவனோடு சஞ்சரித்தான்? ",
+            options: ["100", "65", "365", "300"],     
+            answer: 3
+        },
+        {
+            question: "37) யார் காணப்படாமல் போனான் ?யாரை தேவன் எடுத்துக்கொண்டார்?",
+            options: ["மெத்தூசலா", "ஏனோஸ்", "சேத்", "ஏனோக்கு"],     
+            answer: 3
+        },
+        {
+            question: "38) மெத்தூசலா எத்தனை வருஷம் வாழ்ந்தான்?",
+            options: ["950", "930", "962", "926"],     
+            answer: 2
+        },
+        {
+            question: "39) நோவாவின் தகப்பன் பெயர் என்ன?",
+            options: ["ஏனோஸ்", "மெத்தூசலா", "லாமேக்கு", "ஈராத்"],     
+            answer: 2
+        },
+        {
+            question: "40) நோவாவின் குமாரர் யார்?",
+            options: ["சேம்", "காம்", "யாப்பேத்", "இவை மூன்றும்"],     
+            answer: 3
+        },
+        {
+            question: "41)ஏனோக்கின் குமாரன் யார்?",
+            options: ["ஏனோஸ்", "மெத்தூசலா", "லாமேக்கு", "ஈராத்"],     
+            answer: 1
+        },
+        {
+            question: "42) யார், மனுஷகுமாரத்திகளை அதிக சௌந்தரியமுள்ளவர்களென்று கண்டு, அவர்களுக்குள்ளே தங்களுக்குப் பெண்களைத் தெரிந்துகொண்டார்கள்?",
+            options: ["தேவகுமாரர்", "தூதர்கள்", "மனுஷன்", "தேவர்கள்"],     
+            answer: 0
+        },
+        {
+            question: "43) அப்பொழுது கர்த்தர்: என் எது என்றென்றைக்கும் மனுஷனோடே போராடுவதில்லை.", 
+            options: ["மாம்சம்", "ஆவி", "ஆத்துமா", "சரீரம்?"],     
+            answer: 1
+        },
+        {
+            question: "44) மனுஷன் ________ தானே",
+            options: ["மண்", "உயிர்", "மாம்சம்", "களிமண்"],     
+            answer: 2
+        },
+        {
+            question: "45) மனுஷன் இருக்கப் போகிற நாட்கள் எத்தனை வருஷம் என்றார்?",
+            options: ["80", "120", "100", "60"],     
+            answer: 1
+        },
+        {
+            question: "46) எது பூமியிலே பெருகினது ?",
+            options: ["மனிதர்கள்", "மிருகஜுவன்கள்", "மனுஷனுடைய பாவங்கள் ", "மனுஷனுடைய அக்கிரமம்"],     
+            answer: 3
+        },
+        {
+            question: "47) மனுஷனுடைய ______  நினைவுகளின் தோற்றமெல்லாம் நித்தமும் பொல்லாததே என்று கர்த்தர் கண்டார்.",
+            options: ["சிந்தனையின்", "புத்தியின்", "இருதயத்தின்", "யோசனையின்"],     
+            answer: 2
+        },
+        {
+            question: "48) பூமியிலே யாரை உண்டாக்கினதற்காகக் கர்த்தர் மனஸ்தாபப்பட்டார். அது அவர் இருதயத்துக்கு விசனமாயிருந்தது?",
+            options: ["மனுஷனை", "ஆதாமை", "ஏவாளை", "சர்ப்பத்தை"],     
+            answer: 0
+        },
+        {
+            question: "49) யாருக்கு, கர்த்தருடைய கண்களில் கிருபை கிடைத்தது?",
+            options: ["ஆதாம்", "சேத்", "நோவா", "சேம்"],     
+            answer: 2
+        },
+        {
+            question: "50) நோவா தன் காலத்தில் வாழ்ந்தவர்களுக்குள்ளே எப்படி இருந்தான்?",
+            options: ["உத்தமன்", "நீதிமான்", "தேவனோடு சஞ்சரிக்கிறவன் ", "இவை மூன்றும்"],     
+            answer: 3
+        },
+        {
+            question: "51) எது தேவனுக்கு முன்பாகச் சீர்கெட்டதாயிருந்தது?",
+            options: ["பூமி", "உலகம்", "மனுஷன்", "சிருஷ்டிகள்?"],     
+            answer: 0
+        },
+        {
+            question: "52) பூமி எதனால் நிறைந்திருந்தது?",
+            options: ["பாவத்தினால்", "சாபத்தினால்", "கொடுமையினால்", "அக்கிரமத்தினால்"],     
+            answer: 2
+        },
+        {
+            question: "53) யார் பூமியின்மேல் தங்கள் வழியைக் கெடுத்துக்கொண்டிருந்தார்கள்?",
+            options: ["மனிதர்கள்", "மிருகஜுவன்கள்", "சிருஷ்டிகள்", "மாம்சமான யாவரும்"],     
+            answer: 3
+        },
+        {
+            question: "54) நீ ______ மரத்தால் உனக்கு ஒரு பேழையை உண்டாக்கு. அந்தப் பேழையிலே ______ உண்டுபண்ணி, அதை உள்ளும் புறம்புமாக கீல்பூசு.",
+            options: ["சீத்திம் மரத்தால், ஜன்னல் ", "கொப்பேர் மரத்தால், அறைகளை ", "அத்திமரத்தால், கதவை", "காட்டத்திமரத்தால், மேல்தட்டை"],     
+            answer: 1
+        },
+        {
+            question: "55) பேழை எத்தனை முழு நீளம் இருந்தது ?",
+            options: ["300", "50", "30", "எதுவுமில்லை"],     
+            answer: 0
+        },
+        {
+            question: "56) ஆனாலும் உன்னுடனே எதை ஏற்படுத்துவேன் என்று நோவாவிடம் கூறினார்?",
+            options: ["கட்டளை", "ஒப்பந்தம்", "உடன்படிக்கை", "எதுவுமில்லை"],     
+            answer: 2
+        },
+        {
+            question: "57) நோவாவுக்கு யார் கண்களில் கிருபை கிடைத்தது?",
+            options: ["கர்த்தர்", "தேவன்", "ஆண்டவர்", "இறைவன்"],     
+            answer: 0
+        },
+        {
+            question: "58) பேழையின் உயரம் என்ன?",
+            options: ["300", "50", "30", "எதுவுமில்லை"],      
+            answer: 1
+        },
+        {
+            question: "59) பேழையின் அகலம் என்ன?",
+            options: ["300", "50", "30", "எதுவுமில்லை"],    
+            answer: 2
+        },
+        {
+            question: "60) உனக்கும் அவைகளுக்கும் ஆகாரமாகச்  எவைகளை சேர்த்து, உன்னிடத்தில் வைத்துக்கொள் என்றார்?",
+            options: ["உணவு ", "போஜனம்", "பதார்த்தம்", "போதனைபதார்த்தம்"],     
+            answer: 3
+        },
+    ];
+
+    // VARIABLES
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+    let participantName = "";
+    let resultSubmitted = false;
+
+    // HTML ELEMENTS
+    const registerSection = document.getElementById("register");
+    const registerForm = document.getElementById("register-form");
+    const nameInput = document.getElementById("participant-name");
+    const quizSection = document.getElementById("quiz");
+    const resultSection = document.getElementById("result");
+    const questionElement = document.getElementById("question");
+    const optionsElement = document.getElementById("options");
+    const countElement = document.getElementById("question-count");
+    const scoreElement = document.getElementById("score");
+    const feedbackElement = document.getElementById("feedback");
+    const progressBar = document.getElementById("progress-bar");
+    const nextButton = document.getElementById("next-btn");
+    const restartButton = document.getElementById("restart-btn");
+    const submissionStatus = document.getElementById("submission-status");
+
+    // REGISTRATION
+    registerForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        participantName = nameInput.value.trim();
+
+        if (!participantName) {
+            alert("Please enter your name.");
+            nameInput.focus();
+            return;
+        }
+
+        currentQuestion = 0;
+        score = 0;
+        answered = false;
+        resultSubmitted = false;
+        scoreElement.textContent = "Score: 0";
+
+        registerSection.classList.add("hidden");
+        resultSection.classList.add("hidden");
+        quizSection.classList.remove("hidden");
+
+        showQuestion();
+    });
+
+    // DISPLAY A QUESTION
+    function showQuestion() {
+        answered = false;
+        const current = questions[currentQuestion];
+
+        countElement.textContent =
+            `Question ${currentQuestion + 1} of ${questions.length}`;
+        questionElement.textContent = current.question;
+        optionsElement.innerHTML = "";
+        feedbackElement.textContent = "";
+        nextButton.disabled = true;
+
+        nextButton.textContent =
+            currentQuestion === questions.length - 1
+                ? "See Final Score"
+                : "Next Question";
+
+        progressBar.style.width =
+            `${(currentQuestion / questions.length) * 100}%`;
+
+        current.options.forEach(function(option, index) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "option";
+            button.textContent = String.fromCharCode(65 + index) + ". " + option;
+
+            button.addEventListener("click", function() {
+                selectAnswer(index, button);
+            });
+
+            optionsElement.appendChild(button);
+        });
+    }
+
+    // CHECK ANSWER
+    function selectAnswer(selectedIndex, selectedButton) {
+        if (answered) return;
+        answered = true;
+
+        const correctIndex = questions[currentQuestion].answer;
+        const allOptions = optionsElement.querySelectorAll(".option");
+
+        allOptions.forEach(function(button, index) {
+            button.disabled = true;
+            if (index === correctIndex) button.classList.add("correct");
+        });
+
+        if (selectedIndex === correctIndex) {
+            score++;
+            feedbackElement.textContent = "Correct! Well done!";
+            feedbackElement.style.color = "#15803d";
+        } else {
+            selectedButton.classList.add("wrong");
+            feedbackElement.textContent =
+                "Incorrect! Correct answer: " +
+                questions[currentQuestion].options[correctIndex];
+            feedbackElement.style.color = "#dc2626";
+        }
+
+        scoreElement.textContent = "Score: " + score;
+        nextButton.disabled = false;
+    }
+
+    // NEXT QUESTION
+    nextButton.addEventListener("click", function() {
+        if (!answered) return;
+
+        currentQuestion++;
+
+        if (currentQuestion < questions.length) {
+            showQuestion();
+        } else {
+            showResult();
+        }
+    });
+
+    // HAPPY MODE OR SAD MODE
+    function showResultMode(finalScore, totalQuestions) {
+        const percentage = (finalScore / totalQuestions) * 100;
+        const resultMode = document.getElementById("resultMode");
+        const resultEmoji = document.getElementById("resultEmoji");
+        const resultTitle = document.getElementById("resultTitle");
+        const resultMessage = document.getElementById("resultMessage");
+
+        resultMode.hidden = false;
+        resultMode.classList.remove("happy-mode", "sad-mode");
+
+        if (percentage >= 70) {
+            resultMode.classList.add("happy-mode");
+            resultEmoji.textContent = "🥳🎉";
+            resultTitle.textContent = "Excellent!";
+            resultMessage.textContent =
+                "The horse is prepared for the day of battle, But deliverance is of the Lord. (Proverbs 21:31)";
+        } else {
+            resultMode.classList.add("sad-mode");
+            resultEmoji.textContent = "😢";
+            resultTitle.textContent = "Don't Give Up!";
+            resultMessage.textContent =
+                "Keep reading the Bible and practising. You can do even better next time!";
+        }
+    }
+
+    // SEND RESULT TO GOOGLE SHEETS
+    async function sendResultToGoogleSheets() {
+        if (
+            !SCRIPT_URL ||
+            SCRIPT_URL === "PASTE_YOUR_WEB_APP_URL_HERE"
+        ) {
+            submissionStatus.textContent =
+                "Results are not connected to Google Sheets yet. Add your Apps Script Web app URL to enable result collection.";
+            return;
+        }
+
+        const resultData = {
+            name: participantName,
+            score: score,
+            total: questions.length
+        };
+
+        submissionStatus.textContent = "Submitting your result...";
+
+        try {
+            // no-cors sends the request but does not let the browser read the response.
+            await fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8"
+                },
+                body: JSON.stringify(resultData)
+            });
+
+            submissionStatus.textContent =
+                "Your result submission was sent. The browser cannot confirm whether the spreadsheet saved it.";
+        } catch (error) {
+            console.error("Result submission failed:", error);
+            submissionStatus.textContent =
+                "Could not send the result. Please check your internet connection or contact the quiz organiser.";
+        }
+    }
+
+    // SHOW FINAL SCORE
+    function showResult() {
+        quizSection.classList.add("hidden");
+        resultSection.classList.remove("hidden");
+        progressBar.style.width = "100%";
+
+        document.getElementById("final-score").textContent =
+            participantName + " — Your Score: " + score + " / " + questions.length;
+
+        const percentage = (score / questions.length) * 100;
+        let message;
+
+        if (percentage === 100) {
+            message = "Excellent! You answered every question correctly!";
+        } else if (percentage >= 70) {
+            message = "Great job! Keep learning!";
+        } else if (percentage >= 40) {
+            message = "Good effort! Practise and try again.";
+        } else {
+            message = "Keep practising. You can improve!";
+        }
+
+        document.getElementById("message").textContent =
+            message + " Percentage: " + percentage.toFixed(1) + "%";
+
+        showResultMode(score, questions.length);
+
+        if (!resultSubmitted) {
+            resultSubmitted = true;
+            sendResultToGoogleSheets();
+        }
+        saveQuizResult(
+            document.getElementById("participant-name").value.trim(),
+            score,
+            questions.length
+        );
+    }
+
+    // RESTART: ASK FOR THE NAME AGAIN
+    restartButton.addEventListener("click", function() {
+        currentQuestion = 0;
+        score = 0;
+        answered = false;
+        resultSubmitted = false;
+        participantName = "";
+
+        scoreElement.textContent = "Score: 0";
+        resultSection.classList.add("hidden");
+        quizSection.classList.add("hidden");
+        registerSection.classList.remove("hidden");
+
+        document.getElementById("resultMode").hidden = true;
+        nameInput.value = "";
+        submissionStatus.textContent = "";
+        nameInput.focus();
+    });
+</script>
+</body>
+</html>
