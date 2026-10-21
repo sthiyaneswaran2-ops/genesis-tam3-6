@@ -808,7 +808,7 @@
             });
 
             submissionStatus.textContent =
-                "Your result submission was sent. The browser cannot confirm whether the spreadsheet saved it.";
+                "Your result submission was sent.";
         } catch (error) {
             console.error("Result submission failed:", error);
             submissionStatus.textContent =
@@ -847,11 +847,6 @@
             resultSubmitted = true;
             sendResultToGoogleSheets();
         }
-        saveQuizResult(
-            document.getElementById("participant-name").value.trim(),
-            score,
-            questions.length
-        );
     }
 
     // RESTART: ASK FOR THE NAME AGAIN
