@@ -776,46 +776,6 @@
                 "Keep reading the Bible and practising. You can do even better next time!";
         }
     }
-
-    // SEND RESULT TO GOOGLE SHEETS
-    async function sendResultToGoogleSheets() {
-        if (
-            !SCRIPT_URL ||
-            SCRIPT_URL === "PASTE_YOUR_WEB_APP_URL_HERE"
-        ) {
-            submissionStatus.textContent =
-                "Results are not connected to Google Sheets yet. Add your Apps Script Web app URL to enable result collection.";
-            return;
-        }
-
-        const resultData = {
-            name: participantName,
-            score: score,
-            total: questions.length
-        };
-
-        submissionStatus.textContent = "Submitting your result...";
-
-        try {
-            // no-cors sends the request but does not let the browser read the response.
-            await fetch(SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: {
-                    "Content-Type": "text/plain;charset=utf-8"
-                },
-                body: JSON.stringify(resultData)
-            });
-
-            submissionStatus.textContent =
-                "Your result submission was sent.";
-        } catch (error) {
-            console.error("Result submission failed:", error);
-            submissionStatus.textContent =
-                "Could not send the result. Please check your internet connection or contact the quiz organiser.";
-        }
-    }
-
     // SHOW FINAL SCORE
     function showResult() {
         quizSection.classList.add("hidden");
