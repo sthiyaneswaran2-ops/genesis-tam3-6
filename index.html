@@ -845,13 +845,13 @@
 
         if (!resultSubmitted) {
             resultSubmitted = true;
-            sendResultToGoogleSheets();
+
+            saveQuizResult(
+                participantName,
+                score,
+                questions.length
+            );
         }
-        saveQuizResult(
-            document.getElementById("participant-name").value.trim(),
-            score,
-            questions.length
-        );
     }
 
     // RESTART: ASK FOR THE NAME AGAIN
