@@ -847,6 +847,11 @@
             resultSubmitted = true;
             sendResultToGoogleSheets();
         }
+        saveQuizResult(
+            document.getElementById("participant-name").value.trim(),
+            score,
+            questions.length
+        );
     }
 
     // RESTART: ASK FOR THE NAME AGAIN
